@@ -1,0 +1,11 @@
+{
+    "name": "JanisGruzis/maze-generator",
+    "license": "MIT",
+    "description": "Library for generating random maze data.",
+    "autoload": {
+        "psr-4": { "JanisGruzis\\": "src/" }
+    },
+    "require": {
+        "php": ">=5.6"
+    }
+}
