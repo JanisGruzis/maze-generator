@@ -2,6 +2,8 @@
 
 namespace JanisGruzis;
 
+use JanisGruzis\Exception\MazeException;
+
 /**
  * Class Maze
  *
@@ -20,7 +22,7 @@ class Maze
     private $height;
 
     /**
-     * @var null|string
+     * @var int
      */
     private $seed;
 
@@ -42,15 +44,15 @@ class Maze
     /**
      * Maze constructor.
      *
-     * @param int         $width
-     * @param int         $height
-     * @param string|null $seed
+     * @param int $width
+     * @param int $height
+     * @param int $seed
      */
-    public function __construct($width = 8, $height = 8, $seed = null)
+    public function __construct($width = 8, $height = 8, $seed = 0)
     {
-        $this->width = $width;
-        $this->height = $height;
-        $this->seed = $seed ?? uniqid();
+        $this->setWidth($width);
+        $this->setHeight($height);
+        $this->setSeed($seed);
     }
 
     /**
@@ -78,24 +80,30 @@ class Maze
     }
 
     /**
-     * @param string $seed
+     * @param int $seed
      *
      * @return $this
+     * @throws MazeException
      */
     public function setSeed($seed)
     {
+        if (!is_int($seed)) {
+            throw new MazeException('Seed has to be an integer.');
+        }
+
         $this->seed = $seed;
 
         return $this;
     }
 
     /**
+     * Kruskal's algorithm
+     *
      * @return array
      */
     public function generate()
     {
         $result = [];
-        $k = 0;
 
         $this->cleanup();
         mt_srand($this->seed);
@@ -109,28 +117,31 @@ class Maze
         for ($i = 0; $i < $this->width; ++$i) {
             $result[$i] = [];
             for ($j = 0; $j < $this->height; ++$j) {
+                $k = $i * $this->width + $j;
                 $result[$i][$j] = 15;
                 $this->parent[$k] = $k;
                 $this->rank[$k] = 1;
 
                 foreach ($sides as $key => $side) {
-                    $ip = $i + $side[0];
-                    $jp = $j + $side[1];
-                    if ($ip >= 0 && $ip < $this->width && $jp >= 0 && $jp < $this->height) {
-                        $this->edges[] = [$k, $ip + $this->width * $jp, $key];
+                    $_i = $i + $side[0];
+                    $_j = $j + $side[1];
+                    $_k = $_i * $this->width + $_j;
+
+                    if ($_i >= 0 && $_i < $this->width && $_j >= 0 && $_j < $this->height) {
+                        $this->edges[] = [$k, $_k, $key];
                     }
                 }
-
-                $k++;
             }
         }
 
-        $order = array_map(create_function('$val', 'return mt_rand();'), range(1, count($this->edges)));
-        array_multisort($order, $this->edges);
+        $randomOrder = array_map(create_function('$val', 'return mt_rand();'), range(1, count($this->edges)));
+        array_multisort($randomOrder, $this->edges);
 
         foreach ($this->edges as $edge) {
             if ($this->union($edge[0], $edge[1])) {
-                $result[$edge[0]] &= ~(1 << $edge[2]);
+                $i = $edge[0] / $this->width;
+                $j = $edge[0] % $this->width;
+                $result[$i][$j] &= ~(1 << $edge[2]);
             }
         }
 
