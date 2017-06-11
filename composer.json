@@ -1,5 +1,5 @@
 {
-    "name": "JanisGruzis/maze-generator",
+    "name": "janis-gruzis/maze-generator",
     "license": "MIT",
     "description": "Library for generating random maze data.",
     "autoload": {
