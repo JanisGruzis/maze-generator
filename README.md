@@ -1,2 +1,3 @@
 # maze-generator
+
 Maze generator
