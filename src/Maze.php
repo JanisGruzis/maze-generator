@@ -108,26 +108,24 @@ class Maze
         $this->cleanup();
         mt_srand($this->seed);
         $sides = [
-            [0, -1],
-            [1, 0],
-            [0, 1],
-            [-1, 0],
+            1 => [1, 0],
+            2 => [0, 1],
         ];
 
-        for ($i = 0; $i < $this->width; ++$i) {
+        for ($i = 0; $i < $this->height; ++$i) {
             $result[$i] = [];
-            for ($j = 0; $j < $this->height; ++$j) {
+            for ($j = 0; $j < $this->width; ++$j) {
                 $k = $i * $this->width + $j;
                 $result[$i][$j] = 15;
                 $this->parent[$k] = $k;
                 $this->rank[$k] = 1;
 
                 foreach ($sides as $key => $side) {
-                    $_i = $i + $side[0];
-                    $_j = $j + $side[1];
+                    $_j = $j + $side[0];
+                    $_i = $i + $side[1];
                     $_k = $_i * $this->width + $_j;
 
-                    if ($_i >= 0 && $_i < $this->width && $_j >= 0 && $_j < $this->height) {
+                    if ($_i >= 0 && $_i < $this->height && $_j >= 0 && $_j < $this->width) {
                         $this->edges[] = [$k, $_k, $key];
                     }
                 }
@@ -142,6 +140,9 @@ class Maze
                 $i = $edge[0] / $this->width;
                 $j = $edge[0] % $this->width;
                 $result[$i][$j] &= ~(1 << $edge[2]);
+                $_i = $edge[1] / $this->width;
+                $_j = $edge[1] % $this->width;
+                $result[$_i][$_j] &= ~(1 << (($edge[2] + 2) % 4));
             }
         }
 
@@ -166,10 +167,10 @@ class Maze
         }
 
         if ($this->rank[$a] > $this->rank[$b]) {
-            $this->parent[$a] = $b;
+            $this->parent[$b] = $a;
             $this->rank[$a] += $this->rank[$b];
         } else {
-            $this->parent[$b] = $a;
+            $this->parent[$a] = $b;
             $this->rank[$b] += $this->rank[$a];
         }
 
